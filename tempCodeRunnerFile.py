@@ -1,1 +1,1 @@
-self
+screen.get_width() / 2

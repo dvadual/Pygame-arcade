@@ -18,7 +18,7 @@ def widtovec(width,angle):
     return pygame.math.Vector2((width*math.cos(angle_rad),width*math.sin(angle_rad)))
 
 class playerMovement():
-    def __init__(self,position,isplayer=1,maxspeed=200,acc=500,angularvelocity=15):
+    def __init__(self,position,isplayer="random",maxspeed=200,acc=500,angularvelocity=15):
         self.dt = dt
         self.speed = [0,0,0,0]
         self.maxspeed= maxspeed
@@ -46,9 +46,13 @@ class playerMovement():
     def move(self):
         ilist=[0,1,2,3]
         keys = pygame.key.get_pressed()
-        if self.isplayer:
+        if self.isplayer=="key":
             self.ifpressed =[keys[pygame.K_a],keys[pygame.K_d],keys[pygame.K_w],keys[pygame.K_s]]
-        else:
+        elif self.isplayer=="mouse":
+            if pygame.mouse.get_pressed()[0]:
+                    relpos = self.position.copy() - pygame.mouse.get_pos()
+                    self.ifpressed =[relpos.x>0,relpos.x<0,relpos.y>0,relpos.y<0]                
+        elif self.isplayer == "random":        
             self.frame+=1
             if self.frame%10 ==0:
                 self.ifpressed = [random.choice([0,1]) for i in range(4)]
@@ -102,6 +106,7 @@ class sneks(playerMovement):
         self.size = self.width*2
         self.position1= (self.width*2.5,self.width)
         self.headsurface = pygame.Surface((self.width*5,self.width*3.5), pygame.SRCALPHA)
+        self.headrect = self.headsurface.get_rect()
         #self.headsurface.fill("yellow")
         self.arrowsurface = pygame.Surface((self.width*2,self.width*2), pygame.SRCALPHA)
         self.color=color
@@ -191,16 +196,17 @@ class sneks(playerMovement):
     def showsnek(self):
         self.updatepos_angle()
         self.updatebody()
-        if self.isplayer==1:
+        if self.isplayer=="key" or self.isplayer == "mouse":
             rotatedarrow = pygame.transform.rotate(self.arrowsurface,self.angle)
             snakearrow_rect = rotatedarrow.get_rect(center=self.position+(-widtovec(self.width*1.5,self.angle+90).x,+widtovec(self.width*1.5,self.angle+90).y))
             #pygame.draw.rect(screen, 'red',snakearrow_rect , width=3)
             self.screen.blit(rotatedarrow,snakearrow_rect)
- 
+        
         rotatedhead = pygame.transform.rotate(self.headsurface,self.angle)
         snakehead_rect = rotatedhead.get_rect(center=self.position)
         #pygame.draw.rect(screen, 'red',snakehead_rect , width=3)
         self.screen.blit(rotatedhead,snakehead_rect)
+        self.headrect=snakehead_rect
         return snakehead_rect
 
     def increasecount(self):
@@ -239,6 +245,7 @@ class circleobj():
         self.outercolor = outercolor
         self.radius= rad
         self.surf = pygame.Surface((rad*2,rad*2), pygame.SRCALPHA)
+        self.center =(x,y)
         self.rect = self.surf.get_rect(center=(x,y))
     # innerrgb =pygame.Color(innercolor)
     # inrgb =(innerrgb.r,innerrgb.g,innerrgb.a)
@@ -254,17 +261,15 @@ class circleobj():
             g=int(self.innercolor[1]+(self.outercolor[1]-self.innercolor[1])*t)
             b=int(self.innercolor[2]+(self.outercolor[2]-self.innercolor[2])*t)
             pygame.draw.aacircle(self.surf,(r,g,b),center,gradientwid+i,1)
-    def drawparticle(self,surface):
+    def drawparticle(self,surface,rel =0):
+        #self.rect =self.rect.move_to(center=self.center)
         surface.blit(self.surf,self.rect)
-
-
 
 count = 10
 width,height= screen.get_size()
 board = pygame.Surface((width,height))
 board.fill("black")
-snake1 = sneks(screen,player_pos,True,"blue",count)
-snake2 = sneks(screen,player_pos.copy(),False,"gold",50)
+
 circles = []
 cirobjects=[]
 for i in range(70):
@@ -284,32 +289,41 @@ for i in range(70):
             break
 
 
-    
-
+snakes =[sneks(board,player_pos,"key","blue",count),
+sneks(board,player_pos.copy(),"random","gold",50)
+]
 
 while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
     board.fill("black")
+    screen.fill("black")
     for i in cirobjects:
         i.drawparticle(board)
+    
+    for snake in snakes:
+        snake.showsnek()
 
-    screen.blit(board)
-    snakehead = snake1.showsnek()
-    snake2.showsnek()
-    indofcoll= snakehead.collidelistall(circles)
-    if indofcoll:
-        print(indofcoll)
-        for ind in indofcoll:
-            snake1.increasecount()
-            cirobjects.remove(cirobjects[ind])
-            circles.remove(circles[ind])
+
+        indofcoll= snake.headrect.collidelistall(circles)
+        if indofcoll:
+            print(indofcoll)
+            indofcoll.sort()
+            for ind in indofcoll:
+                snake.increasecount()
+                cirobjects.remove(cirobjects[ind])
+                circles.remove(circles[ind])
+        
+
 
         #cirobjects[ind].drawparticle(board)
         #screen.blit(board)
             
+    boardrect= board.get_rect(center=(640,640)-snakes[0].position)
+    screen.blit(board,boardrect)
 
     pygame.display.flip()
     
