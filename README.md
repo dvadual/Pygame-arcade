@@ -1,39 +1,36 @@
-# 🐍 Multiplayer Snake Arena
+# 🐍 snek arena
 
-A modern, physics-based multiplayer snake game built with Pygame. Control your snake through a dynamic arena, compete against AI opponents, and grow by collecting food in this engaging real-time strategy game.
+A competitive real-time snake game built with Pygame, showcasing advanced game physics, object-oriented design, and real-time graphics rendering.
 
 ## 📋 Project Overview
 
-**Multiplayer Snake Arena** is an enhanced take on the classic Snake game, featuring:
-- **Physics-driven movement** with smooth acceleration and deceleration
-- **Multiple control schemes** (keyboard, mouse, AI)
-- **Procedurally generated food particles** with gradient rendering
-- **Real-time collision detection** between snakes and food
-- **Dynamic camera system** that follows the player
-
-The game demonstrates advanced Python game development concepts including object-oriented design, vector mathematics, physics simulation, and real-time graphics rendering. Perfect for portfolio building and game development learning.
+**snek arena** is a multiplayer snake game where you control a snake to collect food while competing against AI opponents. The game demonstrates core game development concepts:
+- **Delta-time physics** for frame-rate independent movement
+- **Object-oriented architecture** with inheritance-based design
+- **Vector mathematics** for smooth directional gameplay
+- **Real-time collision detection** systems
+- **Procedural graphics** with gradient rendering
+- **AI state machines** for autonomous opponent behavior
 
 ---
 
 ## ✨ Features
 
-### Gameplay Features
-- 🎮 **Player-controlled snake** with keyboard controls
-- 🤖 **4 AI-controlled snakes** with autonomous movement patterns
-- 🍔 **70 randomly placed food items** with collision-based collection
-- 📏 **Growth mechanics** - snakes expand as they consume food
-- 💥 **Multi-snake collision detection** system
-- 📹 **Dynamic camera** that follows the player's snake
-- 🎨 **Gradient-rendered particles** for visual polish
+### Gameplay
+- **Player-controlled blue snake** with WASD keyboard controls
+- **4 AI-controlled snakes** with autonomous random movement patterns
+- **70 procedurally-generated food particles** with gradient color rendering
+- **Real-time collision detection** between player/snakes and food
+- **Growth mechanic** - snakes expand as they consume food
+- **Dynamic camera** that centers on the player's snake
+- **Smooth acceleration/deceleration physics** (not instant movement)
 
-### Technical Highlights
-- **Delta-time based physics** for frame-rate independent movement
-- **Vector2 mathematics** for smooth directional movement
-- **Inheritance hierarchy** using Python classes (`playerMovement` → `sneks`)
-- **Surface rendering** with alpha transparency and rotation
-- **Collision detection algorithms** (rect collisions, point collisions)
-- **Procedural content generation** for food placement
-- **Optimized rendering** pipeline
+### Technical Architecture
+- **Inheritance-based design** - `playerMovement` base class for all agents
+- **Vector-based movement** using `pygame.Vector2` and trigonometry
+- **Delta-time physics** ensuring consistent gameplay across varying frame rates
+- **Surface rendering** with rotation, scaling, and alpha transparency
+- **Multi-collision detection** systems (rectangle and list-based)
 
 ---
 
@@ -48,11 +45,11 @@ The game demonstrates advanced Python game development concepts including object
 | **D** | Move Right |
 | **ALT+F4** or **Close Window** | Exit Game |
 
-**Movement Mechanics:** 
-- Smooth acceleration when keys are pressed
-- Smooth deceleration when keys are released
-- Snake head rotates to face movement direction
-- Direction arrow indicates intended direction of movement
+**Movement Behavior:**
+- Keys trigger smooth acceleration (not instant)
+- Releasing keys triggers smooth deceleration
+- Snake head rotates to face the movement direction
+- Movement physics: Max Speed 200 px/s, Acceleration 500 px/s²
 
 ---
 
@@ -62,15 +59,15 @@ The game demonstrates advanced Python game development concepts including object
 - Python 3.7 or higher
 - pip (Python package manager)
 
-### Setup Instructions
+### Setup
 
-1. **Clone the repository** (or download the project)
+1. **Clone the repository**
 ```bash
 git clone <repository-url>
 cd pygamestuff
 ```
 
-2. **Install dependencies**
+2. **Install Pygame**
 ```bash
 pip install pygame
 ```
@@ -80,21 +77,15 @@ pip install pygame
 python snek.py
 ```
 
-### Optional: Virtual Environment (Recommended)
+### Virtual Environment (Recommended)
 ```bash
-# Create virtual environment
 python -m venv venv
-
-# Activate it
-# On Windows:
+# Windows:
 venv\Scripts\activate
-# On macOS/Linux:
+# macOS/Linux:
 source venv/bin/activate
 
-# Install pygame
 pip install pygame
-
-# Run game
 python snek.py
 ```
 
@@ -103,7 +94,7 @@ python snek.py
 ## 📦 Requirements
 
 ```
-pygame==2.1.0+
+pygame>=2.1.0
 python>=3.7
 ```
 
@@ -118,23 +109,26 @@ pip install pygame
 
 ```
 pygamestuff/
-├── snek.py                      # Main game file (production)
-├── gettingstarted.py            # Learning/practice file (tutorial code)
-├── tempCodeRunnerFile.py        # Temporary code snippet
-└── README.md                    # This file
+├── snek.py                      # Main game (production)
+├── gettingstarted.py            # Pygame learning reference
+├── tempCodeRunnerFile.py        # Temporary code
+├── exanpleimage.jpeg            # Asset used in gettingstarted.py
+├── README.md                    # This file
+├── .github/
+│   └── prompts/
+│       └── update-readme.md     # Documentation maintenance guide
+└── screenshots/
+    ├── maingameplay.png         # Main gameplay screenshot
+    └── snakehead.png            # Snake head close-up
 ```
 
-### File Descriptions
+### File Purposes
 
-**`snek.py`** (Main Game - ~330 lines)
-- Core game logic and loop
-- All class definitions and game mechanics
-- Fully playable multiplayer snake arena
-
-**`gettingstarted.py`** (Tutorial/Demo - ~70 lines)
-- Pygame fundamentals demonstration
-- Image loading, scaling, collision detection
-- Learning resource for Pygame basics
+| File | Purpose |
+|------|---------|
+| `snek.py` | Main game - contains all gameplay, physics, rendering, and AI logic (~330 lines) |
+| `gettingstarted.py` | Pygame fundamentals tutorial - separate from main game (~70 lines) |
+| `tempCodeRunnerFile.py` | Temporary code snippet file |
 
 ---
 
@@ -142,273 +136,301 @@ pygamestuff/
 
 ### Architecture Overview
 
-The game uses **object-oriented design** with a clear class hierarchy:
+snek arena uses **inheritance-based object-oriented design**:
 
 ```
-playerMovement (Base Class)
-    └── sneks (Game Snake Class)
-         └── Player + 4 AI Snakes
+playerMovement (base class)
+    ├─ Input handling (keyboard, mouse, AI)
+    ├─ Physics engine (acceleration, velocity, angle)
+    └─ Position tracking
+        │
+        └→ sneks (game snake class)
+              ├─ Head rendering (3D-like design with eyes)
+              ├─ Body trail management
+              ├─ Collision detection
+              └─ Growth mechanics
 
-circleobj (Food Particle Class)
+circleobj (food particle class)
+    └─ Gradient rendering, collision rectangles
 
-gameboard (Game Manager - partially implemented)
+Game Loop
+    ├─ Event handling (quit)
+    ├─ Physics updates (all snakes)
+    ├─ Rendering (food, snakes, camera)
+    └─ Collision detection (food, snake-to-snake)
 ```
 
 ### Core Classes
 
 #### **`playerMovement` Class**
-Handles all movement physics and input:
-- **Attributes:** position, velocity, angle, speed array (WASD tracking)
-- **Methods:**
-  - `move()` - Processes input and calculates velocity
-  - `accelmove(i)` - Accelerates in direction i
-  - `decelmove(i)` - Decelerates in direction i
-  - `angleturn()` - Rotates snake based on movement
-  - `updatepos_angle()` - Updates position and angle each frame
+Handles physics and input for any moving entity:
+
+**Attributes:**
+- `position` - Vector2 position in world space
+- `angle` - Rotation angle based on movement direction
+- `speed[4]` - Array tracking velocity for [left, right, up, down]
+- `maxspeed` - Speed limit (200 px/s)
+- `acc` - Acceleration magnitude (500 px/s²)
+- `ifpressed[]` - Tracks which directional inputs are active
+
+**Methods:**
+- `move()` - Processes input mode (keyboard/mouse/AI) and returns velocity vector
+- `accelmove(i)` - Accelerates in direction i up to maxspeed
+- `decelmove(i)` - Decelerates in direction i  
+- `angleturn()` - Calculates rotation angle from velocity using `atan2()`
+- `updatepos_angle()` - Updates position and angle each frame
 
 **Input Modes:**
-- `"key"` - WASD keyboard input
-- `"mouse"` - Mouse-following movement
-- `"random"` - AI autonomous movement
+- `"key"` - WASD keyboard input (player-controlled)
+- `"mouse"` - Mouse-relative movement 
+- `"random"` - Random directions every 10 frames (AI)
 
 #### **`sneks` Class (Inherits from playerMovement)**
-Extends movement with rendering and game logic:
-- **Head Rendering:** 3D-like triangular head with eyes using vector mathematics
-- **Body Trail:** Dynamic array of circles that follow the head
-- **Collision Detection:** Head rectangle for food and body collisions
-- **Growth Mechanics:** `increasecount()` increases snake size and width
-- **Display:** `showsnek()` renders head, body, arrow, and handles rotation
+Game snakes with rendering and collision mechanics:
+
+**Attributes:**
+- `headsurface` - Pre-rendered 3D-like head with eyes
+- `bodyrects[]` - List of body segment rectangles for collision
+- `pos_for_circles[]` - Position history for body trail
+- `count` - Current snake length (number of body segments)
+- `width` - Snake thickness (increases as snake grows)
+- `color` - Snake color (blue=player, gold/gray/white/orange=AI)
+- `screen` - Reference to render surface
 
 **Key Methods:**
-```python
-drawhead()          # Creates triangular head shape with eyes
-drawbody(position)  # Adds body segment
-updatebody()        # Maintains body trail spacing
-showsnek()          # Main render function (called each frame)
-increasecount()     # Grows snake on food consumption
-```
+- `drawhead()` - Renders triangular head (3 circles forming triangle) with white eyes
+- `drawbody(position)` - Creates circular body segment at position
+- `updatebody()` - Maintains body trail using distance-based insertion
+- `showsnek()` - Main render function: updates position, renders head+body+arrow
+- `increasecount()` - Grows snake (increases length, increases width every 10 foods)
+
+**Growth Mechanics:**
+- Each food consumed → `count += 1`
+- Every 10 foods → `width += 2` pixels (visual thickness increases)
+- Body rendered as 50-70 circular segments behind head
+
+**Head Design:**
+The head is procedurally rendered using vector mathematics:
+- 3 circular elements positioned at different angles form a triangle shape
+- 2 white circular eyes with black pupils
+- The entire head rotates to face movement direction
 
 #### **`circleobj` Class**
-Food particles with gradient rendering:
-- Procedurally generates gradient circles
-- Stores inner/outer colors for smooth visual effect
-- Uses alpha blending for transparency
+Procedurally-generated food particles with gradient effects:
+
+- Creates smooth color gradients from inner → outer color
+- Interpolates RGB values across radius for visual polish
+- Stores collision rectangle for detection
+- Uses alpha transparency (SRCALPHA surface)
 
 ### Game Loop (Main)
 
 ```python
 while running:
-    # Input processing
+    # 1. Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
     
-    # Clear screen
+    # 2. Clear and prepare surfaces
     board.fill("black")
+    screen.fill("black")
     
-    # Render food particles
+    # 3. Render all food particles
     for food in cirobjects:
         food.drawparticle(board)
     
-    # Update and render each snake
+    # 4. Update and render each snake
     for snake in snakes:
-        snake.showsnek()
+        snake.showsnek()  # Updates position, angle, body, and renders
         
-        # Collision detection: snake vs food
-        food_collisions = snake.headrect.collidelistall(circles)
-        if food_collisions:
-            snake.increasecount()  # Grow
-            # Remove eaten food
+        # Collision detection: Head vs Food
+        food_indices = snake.headrect.collidelistall(circles)
+        if food_indices:
+            for idx in sorted(food_indices, reverse=True):
+                snake.increasecount()      # Grow
+                cirobjects.remove(cirobjects[idx])
+                circles.remove(circles[idx])
         
-        # Collision detection: snake vs other snakes
-        body_collisions = snake.headrect.collidelistall(snakebodies)
-        if body_collisions:
-            print(f"{snake.color} collided!")  # Debug output
+        # Collision detection: Head vs Other snake bodies
+        body_indices = snake.headrect.collidelistall(other_snake_bodies)
+        if body_indices:
+            print(f"Collision: {snake.color}")  # Debug output
     
-    # Camera follows player (snake[0])
-    camera_pos = board.get_rect(center=screen_center - player_position)
-    screen.blit(board, camera_pos)
+    # 5. Camera system (follows player)
+    player_position = snakes[0].position
+    camera_offset = (640, 640) - player_position
+    boardrect = board.get_rect(center=camera_offset)
+    screen.blit(board, boardrect)
     
+    # 6. Display and frame timing
     pygame.display.flip()
-    dt = clock.tick(60) / 1000  # 60 FPS, delta time in seconds
+    dt = clock.tick(60) / 1000  # 60 FPS limit, delta time in seconds
 ```
 
 ### Physics Implementation
 
-**Delta-Time Based Movement:**
+**Delta-Time Based Movement (Frame-Rate Independent):**
 ```python
-dt = clock.tick(60) / 1000  # Convert milliseconds to seconds
-speed += acceleration * dt  # Frame-rate independent
+# Time elapsed since last frame (in seconds)
+dt = clock.tick(60) / 1000
+
+# Acceleration applied proportionally to time
+speed += acceleration * dt
+
+# Velocity applied proportionally to time  
 position += speed * dt
 ```
 
-This ensures smooth gameplay regardless of frame rate variations.
+This ensures that movement feels identical on 60 FPS vs 120 FPS machines.
 
-**Vector Mathematics:**
-- Angle calculations using `math.atan2()`
-- Direction vectors via `pygame.Vector2`
-- Rotation via `pygame.transform.rotate()`
+**Smooth Acceleration/Deceleration:**
+```python
+# Constants
+max_speed = 200        # pixels/second
+acceleration = 500     # pixels/second²
 
-### Collision System
+# Time to reach max speed = 200 / 500 = 0.4 seconds (24 frames at 60 FPS)
 
-**Two Types of Collisions:**
-1. **Rectangle Collision** - Snake head (rect) vs food (rect)
-   ```python
-   collisions = snake.headrect.collidelistall(food_rects)
-   ```
+# Accelerating
+if key_pressed:
+    speed = min(speed + acceleration * dt, max_speed)
 
-2. **Circle Collision** - Snake head vs other snake bodies
-   ```python
-   collisions = snake.headrect.collidelistall(other_bodies)
-   ```
-
----
-
-## 🎯 Game Mechanics
-
-### Snake Growth
-- Each food consumed increases `count` by 1
-- Every 10 foods consumed, width increases by 2 pixels
-- Body segments are evenly spaced using distance-based tracking
-
-### Movement Physics
-```
-Max Speed: 200 pixels/second
-Acceleration: 500 pixels/second²
-Angular Velocity: 15 degrees per frame
-Deceleration: Same as acceleration
+# Decelerating  
+else:
+    speed = max(speed - acceleration * dt, 0)
 ```
 
-### AI Behavior
-Random snakes choose new directions every 10 frames, simulating autonomous gameplay.
+**Angle Calculation from Velocity:**
+```python
+import math
 
----
+# Velocity components
+vx = speed[right] - speed[left]
+vy = speed[down] - speed[up]
 
-## 🌟 Code Quality Highlights
+# Calculate angle using arctangent
+angle_radians = math.atan2(vy, vx)
+angle_degrees = math.degrees(angle_radians)
 
-- **Modular Design:** Clear separation of concerns (movement, rendering, collision)
-- **Reusable Components:** `playerMovement` base class used for player and AI
-- **Efficient Rendering:** Only updates necessary game objects
-- **Math-Heavy:** Demonstrates vector operations and angle calculations
-- **Scalable Architecture:** Easy to add new snake types or game modes
+# Apply to graphics
+rotated_head = pygame.transform.rotate(headsurface, angle_degrees)
+```
 
----
+### Collision Detection
 
-## 📈 Future Improvements
+**Bounding Box Collision (Rectangle-to-List):**
+```python
+# Snake head bounding box
+snake_head_rect = pygame.Rect(x, y, width, height)
 
-### Gameplay Features
-- [ ] **Game Over Detection** - Implement end conditions when player collides with body
-- [ ] **Score System** - Display current score and high scores
-- [ ] **Difficulty Levels** - Adjustable AI speed, more snakes, larger maps
-- [ ] **Power-ups** - Speed boost, invincibility, etc.
-- [ ] **Leaderboard** - Track high scores across sessions
-- [ ] **Sound Effects** - Eating, collision, game over sounds
-- [ ] **Music** - Background gameplay music
+# Check collision with all food particles
+colliding_food_indices = snake_head_rect.collidelistall(food_rects)
+# Returns: [3, 5, 12] (indices of colliding food)
 
-### Visual Enhancements
-- [ ] **Particle Effects** - Explosion when food is eaten
-- [ ] **Snake Skins** - Custom textures and patterns
-- [ ] **Map Themes** - Different background styles
-- [ ] **Animations** - Smooth transitions and UI polish
-- [ ] **Shadows/Lighting** - Depth perception
+# Check collision with other snake bodies
+colliding_body_indices = snake_head_rect.collidelistall(other_bodies)
+```
 
-### Technical Improvements
-- [ ] **Settings Menu** - Adjust difficulty, controls, graphics
-- [ ] **Pause Menu** - In-game pause and resume
-- [ ] **Save System** - Save/load game state
-- [ ] **Networking** - Multiplayer over network (future expansion)
-- [ ] **Configuration File** - Load game settings from config
-- [ ] **Logging System** - Better debug output organization
+**Workflow:**
+1. Each frame, `showsnek()` updates the snake head rectangle
+2. `collidelistall()` returns indices of all overlapping rectangles
+3. For food: remove food, increment counter
+4. For bodies: detect collision but no response currently
 
-### Code Refactoring
-- [ ] **Complete `gameboard` Class** - Finish partial implementation
-- [ ] **Input Manager** - Centralized input handling
-- [ ] **Event System** - Decouple game logic from rendering
-- [ ] **Unit Tests** - Test collision detection, physics
-- [ ] **Type Hints** - Add Python type annotations
-- [ ] **Documentation** - Docstrings for all methods
+### Game Configuration
+
+| Setting | Value | Found In |
+|---------|-------|----------|
+| Arena Size | 640×640 pixels | `pygame.display.set_mode((640,640))` |
+| Target FPS | 60 frames/second | `clock.tick(60)` |
+| Max Snake Speed | 200 px/second | `playerMovement.__init__(maxspeed=200)` |
+| Acceleration | 500 px/second² | `playerMovement.__init__(acc=500)` |
+| Player Snake Color | Blue | `sneks(..., "blue", ...)` |
+| AI Snake Colors | Gold, Gray, White, Orange | Snake initialization loop |
+| Total Food | 70 particles | `for i in range(70):` |
+| Player Start Length | `count` parameter | `sneks(..., count=50)` |
+| AI Start Lengths | 20-50 segments | Various in snake list |
+| Snake Width | Starts at 10 px | `self.width = 10` in sneks |
+| Width Increase | +2 px per 10 foods | `if self.count%10==0: self.width+=2` |
 
 ---
 
 ## 📸 Screenshots
 
 ### Main Gameplay
-![Main Game](https://via.placeholder.com/640x640?text=Main+Gameplay+Screenshot)
-*Player (blue) snake competing against 4 AI snakes with collectible food particles*
+![Main Gameplay](screenshots/maingameplay.png)
+*Live gameplay showing the blue player snake (center), AI snakes in gold/gray/white colors, and procedurally-generated gradient food particles*
 
-### Game Arena Close-up
-![Arena Detail](https://via.placeholder.com/640x640?text=Arena+Detail)
-*Detailed view showing snake rendering, particle effects, and collision areas*
-
-### Snake Design
-![Snake Visual](https://via.placeholder.com/320x240?text=Snake+Head+Design)
-*Custom-rendered snake head with eyes and directional arrow*
+### Snake Head Design
+![Snake Head Close-up](screenshots/snakehead.png)
+*Detailed view of the player snake's head, showing the blue triangular head design with white eyes and black pupils*
 
 ---
 
-## 🧠 Learning Resources
+## 🎯 Why This Project Appeals to Recruiters
 
-This project demonstrates:
-- **Object-Oriented Programming** - Class inheritance, polymorphism
-- **Game Development Fundamentals** - Game loop, delta-time, rendering
-- **Physics Simulation** - Acceleration, velocity, smooth movement
-- **Vector Mathematics** - Direction, angle, normalization
-- **Collision Detection** - AABB (rectangle) collisions, point collisions
-- **Asset Generation** - Procedural graphics with Pygame
+**Technical Depth:**
+- Demonstrates understanding of game loops, physics engines, and real-time graphics
+- Shows proficiency with object-oriented design and inheritance patterns
+- Includes non-trivial math (vectors, trigonometry, delta-time calculations)
 
-Great for:
-- 🎓 Learning game development
-- 📚 Building portfolio projects
-- 💼 Internship/junior developer applications
-- 🎮 Extending into more complex games
+**Code Quality:**
+- Clear class hierarchies and separation of concerns
+- Efficient collision detection using built-in Pygame methods
+- Readable, well-structured Python with meaningful variable names
 
----
+**Problem-Solving:**
+- Implements smooth movement with acceleration/deceleration
+- Develops AI agents with autonomous behavior
+- Handles real-time collision detection between multiple entities
+- Creates procedural graphics with gradient rendering
 
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-You are free to:
-- ✅ Use in personal and commercial projects
-- ✅ Modify and distribute
-- ✅ Use for learning and educational purposes
-
-Please include attribution if used professionally.
+**Portfolio Value:**
+- Self-contained, playable project
+- Demonstrates ability to build complete systems from scratch
+- Shows attention to performance (delta-time, optimized rendering)
+- Extendable architecture for future features
 
 ---
 
-## 👤 Author
+## 🧠 Technical Concepts Demonstrated
 
-Created as a learning project in game development.
-
----
-
-## 💬 Contributing
-
-Contributions are welcome! Feel free to:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request with improvements
+- **Object-Oriented Programming** - Inheritance, polymorphism, encapsulation
+- **Game Development Fundamentals** - Game loop, event handling, rendering
+- **Physics Simulation** - Acceleration, velocity, inertia, smooth motion
+- **Vector Mathematics** - 2D vectors, angle calculations, normalization
+- **Collision Detection** - Bounding box collisions, multi-entity checking
+- **Graphics Programming** - Surface rendering, rotation, alpha blending, color gradients
+- **AI/Autonomy** - Random behavior, state persistence
+- **Real-Time Systems** - Frame-rate independent updates, timing management
 
 ---
 
-## 🐛 Known Issues
+## 📝 Evidence Summary
 
-- Collision end conditions not fully implemented (snakes don't "die" on collision)
-- `gameboard` class partially implemented but not used
-- No pause or game over screen
-- No UI elements or menus
+This README is based entirely on:
 
-See [Future Improvements](#-future-improvements) for planned features.
-
----
-
-## 📧 Feedback
-
-Have suggestions or found a bug? Feel free to open an issue or reach out!
-
----
-
-**Last Updated:** July 27, 2026  
-**Status:** Active Development  
-**Version:** 1.0
+| Feature/Claim | Source |
+|---|---|
+| Project name: "snek arena" | File name `snek.py` |
+| 5 snakes total | `snakes = [sneks(...), sneks(...), ...]` list with 5 items |
+| 1 player (blue), 4 AI | `sneks(..., "key", "blue", ...)` + 4 random snakes |
+| WASD controls | `keys[pygame.K_w]`, `keys[pygame.K_a]`, etc. |
+| 70 food particles | `for i in range(70):` loop |
+| 640×640 arena | `pygame.display.set_mode((640,640))` |
+| 60 FPS | `clock.tick(60)` |
+| Smooth acceleration physics | `accelmove()`, `decelmove()` functions |
+| Max speed 200 px/s | `maxspeed=200` in `playerMovement.__init__()` |
+| Acceleration 500 px/s² | `acc=500` in `playerMovement.__init__()` |
+| Delta-time physics | `dt = clock.tick(60) / 1000` |
+| Gradient food particles | `circleobj` class with RGB interpolation |
+| Inheritance hierarchy | `class sneks(playerMovement):` |
+| Input modes (keyboard/mouse/AI) | `if self.isplayer=="key":`, etc. |
+| Snake growth mechanics | `increasecount()` method, width increase logic |
+| Collision detection | `collidelistall()` function calls |
+| Camera follows player | `board.get_rect(center=...)` calculation |
+| Snake head with eyes | `pygame.draw.aacircle()` in `drawhead()` |
+| Body trail system | `pos_for_circles[]` array and `drawbody()` |
+| Main gameplay screenshot | `screenshots/maingameplay.png` (actual file) |
+| Snake head screenshot | `screenshots/snakehead.png` (actual file) |
