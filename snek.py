@@ -290,7 +290,11 @@ for i in range(70):
 
 
 snakes =[sneks(board,player_pos,"key","blue",count),
-sneks(board,player_pos.copy(),"random","gold",50)
+sneks(board,player_pos.copy(),"random","gold",50),
+sneks(board,player_pos.copy(),"random","gray",40),
+sneks(board,player_pos.copy(),"random","white",30),
+sneks(board,player_pos.copy(),"random","orange",20)
+
 ]
 
 while running:
@@ -304,18 +308,28 @@ while running:
     for i in cirobjects:
         i.drawparticle(board)
     
-    for snake in snakes:
+    for i,snake in enumerate(snakes):
         snake.showsnek()
+        snakebodies =[]
+        for othersnake in snakes:
+            if othersnake == snake: continue
+            snakebodies+= othersnake.bodyrects
 
 
         indofcoll= snake.headrect.collidelistall(circles)
         if indofcoll:
-            print(indofcoll)
-            indofcoll.sort()
+            indofcoll.sort(reverse=True)
             for ind in indofcoll:
                 snake.increasecount()
                 cirobjects.remove(cirobjects[ind])
                 circles.remove(circles[ind])
+                indofcoll= snake.headrect.collidelistall(circles)
+        bodycoll= snake.headrect.collidelistall(snakebodies)  
+        if bodycoll:
+            bodycoll.sort()
+            print(bodycoll)
+            print(snake.color)
+
         
 
 
