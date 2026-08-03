@@ -1,2 +1,2 @@
-        self.headsurface = pygame.Surface((self.width*5,self.width*3.5), pygame.SRCALPHA)
-        self.headrect = self.headsurface.get_rect()
+        if len(self.pos_for_circles)> self.count+20:
+            del self.pos_for_circles[-1]

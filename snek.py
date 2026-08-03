@@ -102,7 +102,6 @@ class playerMovement():
 class sneks(playerMovement):
     def __init__(self,screen,position,isplayer,color,count=50):
         super().__init__(position,isplayer)
-        self.point = 0
         self.width=10
         self.size = self.width*2
         
@@ -114,7 +113,10 @@ class sneks(playerMovement):
         self.bodyrects =[]
         self.pos_for_circles=[]
         self.count = count
+        self.point = self.count
         self.yvec = pygame.Vector2((0,1))
+        for i in range(self.count+20):
+            self.pos_for_circles.append(self.position.copy()-self.yvec*i*self.width/2)
         self.drawhead()
         self.drawarrow()
 
@@ -157,8 +159,8 @@ class sneks(playerMovement):
         self.bodyrects.append(snakebody_rect)
         #snakebody_rect=snakebody_rect.move_to(left=position,size=(20,20)) 
         self.screen.blit(snakebody,snakebody_rect)
-        #pygame.draw.rect(screen, 'red',snakebody_rect , width=3)
-        if len(self.bodyrects)>count:
+        #pygame.draw.rect(self.screen, 'red',snakebody_rect , width=3)
+        if len(self.bodyrects)>self.count:
             self.bodyrects.pop(0)
     def drawarrow(self):
         angles =[0,180,-90]
@@ -178,24 +180,25 @@ class sneks(playerMovement):
     
 
     def updatebody(self):
-        if len(self.pos_for_circles) ==0:
-            for i in range(self.count+20):
-                self.pos_for_circles.append(self.position.copy()-self.yvec*i*self.width/2)
+        while self.count+1 > len(self.pos_for_circles):
+            self.pos_for_circles.append(self.pos_for_circles[-1].copy())
+
 
         #print((self.pos_for_circles[0]-position).magnitude())
-        #print(self.count)
+        if self.color =="blue":
+            print(self.count,len(self.pos_for_circles))
+
         self.drawbody(self.pos_for_circles[self.count],last=True)
         for i in range(self.count-1,0,-1):
             #print(pos_for_circles[i])
             #print(i)       
             self.drawbody(self.pos_for_circles[i])
-        
  
         if abs((self.pos_for_circles[0]-self.position).magnitude()) > float(self.width/2):
                 #print("hi")
-                self.pos_for_circles.insert(0,self.position.copy())
-                if len(self.pos_for_circles)> self.count+20:
-                    del self.pos_for_circles[-1]
+            self.pos_for_circles.insert(0,self.position.copy())
+        if len(self.pos_for_circles)> self.count+20:
+            self.pos_for_circles = self.pos_for_circles[:self.count+20]
                 #pos_for_circles.pop(0)
 
 
@@ -218,9 +221,26 @@ class sneks(playerMovement):
     def increasecount(self,rad):
         self.count+=1
         self.point+= (rad/3)
-        if self.count%10 ==0:
-            self.width+=2
-            self.drawhead()
+        self.width=10 + int(math.log(self.point)+0.1*math.sqrt(self.point))
+        self.drawhead()
+    def deadparticles(self):
+        particlespersegment = int(self.point/self.count)
+        for body in self.bodyrects:
+            for i in range(particlespersegment):
+
+                color1 = [random.randint(0,255) for i in range(3)]
+                color2 = [random.randint(0,255) for i in range(3)]
+                x = random.randint(body.left,body.right)
+                y = random.randint(body.top,body.bottom)
+                radiuses = [6, 9,12]
+                weights = [7, 2, 1]
+                rad = random.choices(radiuses,weights=weights)[0]
+                circleobject = circleobj(x,y,rad-1,color1,color2)
+                circle = circleobject.rect
+                circles.append(circle)
+                cirobjects.append(circleobject)                       
+
+
 
 
 class gameboard():
@@ -229,19 +249,6 @@ class gameboard():
         self.sneks=[]
 
 
-def drawparticle(surface,center,radius,innercolor,outercolor):
-    innerrgb =pygame.Color(innercolor)
-    inrgb =(innerrgb.r,innerrgb.g,innerrgb.a)
-    outerrgb =pygame.Color(outercolor)
-    outrgb =(outerrgb.r,outerrgb.g,outerrgb.a)
-    gradientwid= radius/2
-    pygame.draw.aacircle(surface,innercolor,center,gradientwid+i,1)
-    for i in range(int(gradientwid)):
-        t= i/gradientwid
-        r=int(innercolor[0]+(outercolor[0]-innercolor[0])*t)
-        g=int(innercolor[1]+(outercolor[1]-innercolor[1])*t)
-        b=int(innercolor[2]+(outercolor[2]-innercolor[2])*t)
-        pygame.draw.aacircle(surface,(r,g,b),center,gradientwid+i,1)
 default_font = pygame.font.Font(None, 48)
 def render_outlined(
     font: pygame.Font,
@@ -300,7 +307,7 @@ board.fill("black")
 circles = []
 cirobjects=[]
 deadcirobjects={}
-for i in range(500):
+for i in range(700):
 
     color1 = [random.randint(0,255) for i in range(3)]
     color2 = [random.randint(0,255) for i in range(3)]
@@ -321,10 +328,10 @@ for i in range(500):
 
 snakes =[
 sneks(board,player_pos,"key","blue",count),
-sneks(board,player_pos.copy(),"random","gold",50),
-sneks(board,player_pos.copy(),"random","gray",40),
-sneks(board,player_pos.copy(),"random","white",30),
-sneks(board,player_pos.copy(),"random","orange",20)
+sneks(board,player_pos.copy()+(100,0),"random","gold",50),
+sneks(board,player_pos.copy()+(-100,0),"random","gray",40),
+sneks(board,player_pos.copy()+(-200,0),"random","white",30),
+sneks(board,player_pos.copy()+(200,0),"random","orange",20)
 ]
 
 while running:
@@ -342,13 +349,15 @@ while running:
     dictcleanup=[]
     for deadobj,snake in list(deadcirobjects.items()):
         relpos=deadobj.rect.center-snake.position
-        direction = -relpos.normalize() if relpos.magnitude() != 0 else [0,0]
-        print(direction)
-        deadobj.rect.move_ip(direction*5)
-        deadobj.drawparticle(board)
         if abs(relpos.x) < 3 and abs(relpos.y) < 3:
-            print("yes")
+            #print("yes")
             deadcirobjects.pop(deadobj)
+        else:
+            direction = -relpos.normalize() 
+            #wdprint(direction)
+            deadobj.rect.move_ip(direction*5)
+            deadobj.drawparticle(board)
+
     #map(lambda x: deadcirobjects.pop(x),dictcleanup)
 
             
@@ -374,9 +383,13 @@ while running:
                 deadcirobjects[cirobjects[ind]] = snake
                 cirobjects.remove(cirobjects[ind])
                 circles.remove(circles[ind])
-        bodycoll= snake.headrect.collidelistall(snakebodies)  
+        bodycoll= snake.bodyrects[-1].collidelistall(snakebodies)  
+        # for x in snakebodies: 
+        #     pygame.draw.rect(board,'white',x , width=3)
         if bodycoll:
             bodycoll.sort()
+            snake.deadparticles()
+            snakes.remove(snake)
             # print(bodycoll)
             # print(snake.color)
 
