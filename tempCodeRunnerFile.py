@@ -1,2 +1,2 @@
-     print(border)
-            pygame.draw.rect(self.board,"red",border)
+
+screen = pygame.display.set_mode((640,640))
