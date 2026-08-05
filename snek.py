@@ -18,17 +18,18 @@ def widtovec(width,angle):
     return pygame.math.Vector2((width*math.cos(angle_rad),width*math.sin(angle_rad)))
 
 class playerMovement():
-    def __init__(self,position,isplayer="random",maxspeed=200,acc=500,angularvelocity=15):
+    def __init__(self,position:tuple,isplayer="random",maxspeed=200,acc=500,angularvelocity=15):
         self.dt = dt
         self.speed = [0,0,0,0]
         self.maxspeed= maxspeed
         self.acc = acc
         self.anglevelocity = angularvelocity
         self.ifpressed=[]
-        self.position = position
+        self.position = pygame.Vector2(position)
         self.angle =0
         self.isplayer = isplayer
         self.frame =0
+        self.environment={}
 
     def accelmove(self,i):
         if self.speed[i] >= self.maxspeed or self.acc == 0:
@@ -51,12 +52,14 @@ class playerMovement():
         elif self.isplayer=="mouse":
             if pygame.mouse.get_pressed()[0]:
                     relpos = self.position.copy() - pygame.mouse.get_pos()
-                    self.ifpressed =[relpos.x>0,relpos.x<0,relpos.y>0,relpos.y<0]                
+                    self.ifpressed =[relpos.x>0,relpos.x<0,relpos.y>0,relpos.y<0] 
+                    print(self.ifpressed)               
         elif self.isplayer == "random":        
             self.frame+=1
             if self.frame%10 ==0:
                 self.ifpressed = [random.choice([0,1]) for i in range(4)]
-
+        elif self.isplayer== "simplevectorai":
+            self.simpleaimove()
 
         for i,bool in enumerate(self.ifpressed):
             if bool:
@@ -74,51 +77,67 @@ class playerMovement():
 
         xvalue = self.speed[3]-self.speed[2]
         yvalue = self.speed[1]-self.speed[0] 
-        #print(yvalue,xvalue)
         angle_radians = math.atan2(yvalue,xvalue)
-       # print(math.degrees(angle_radians))
         degrees = math.degrees(angle_radians)
         if (True in self.ifpressed): 
  
             self.angle= degrees             
-            # if abs(oldangle - degrees) <= self.anglevelocity:
-            #     return degrees
-            # elif(oldangle<degrees):
-            #     print("reducing")
-            #     oldangle+= self.anglevelocity
-            #     return oldangle
-            # elif(oldangle>degrees):
-            #     print("uincreasing")
-            #     oldangle-=self.anglevelocity
-            #     return oldangle
         else: self.angle= self.angle
     def updatepos_angle(self):
             speed = self.move()
             self.position.x += speed[0]*dt
             self.position.y += speed[1]*dt
             self.angleturn()
+    
+    def get_input_tensors(self,key,objlist:list[pygame.Rect]):
+        colors = {"circles":"orange","bodies":"red","heads":"indigo","border":"gold"}
+
+        detectrect:pygame.Rect=self.headrect.copy().inflate(300,300)
+        pygame.draw.rect(self.screen,"red",detectrect,2)
+
+        objdirection =pygame.Vector2(0,0)
+
+        indofcoll=detectrect.collidelistall(objlist)
+        for ind in indofcoll:
+            objpos= objlist[ind].center
+            objdist =objpos-self.position
+            objdirection += (objdist/objdist.magnitude_squared())
+            pygame.draw.line(self.screen,colors[key],self.position,self.position+objdist)
+        return objdirection
+
+
+
+    def simpleaimove(self):
+            influences ={key:self.get_input_tensors(key,item) for key,item in self.environment.items()}
+            direction =  influences["circles"]-0.025*influences["bodies"]+0.25*influences["heads"]-influences["border"]
+
+            if direction.length_squared()>0:
+                direction.normalize_ip()
+                self.ifpressed=[direction.x<0,direction.x>0,direction.y<0,direction.y>0]
+            pygame.draw.line(self.screen,"green",self.position,self.position+direction)
+            self.environment={}
 
 
 class sneks(playerMovement):
-    def __init__(self,screen,position,isplayer,color,count=50):
+    def __init__(self,screen,position,isplayer,color,point=50):
         super().__init__(position,isplayer)
-        self.width=10
+        self.count = point
+        self.point = self.count
+        self.width=10 + int(0.2*math.log(self.point)+0.1*math.sqrt(self.point))
         self.size = self.width*2
-        
-
         #self.headsurface.fill("yellow")
         self.arrowsurface = pygame.Surface((self.width*2,self.width*2), pygame.SRCALPHA)
         self.color=color
         self.screen = screen
         self.bodyrects =[]
         self.pos_for_circles=[]
-        self.count = count
-        self.point = self.count
+
         self.yvec = pygame.Vector2((0,1))
         for i in range(self.count+20):
             self.pos_for_circles.append(self.position.copy()-self.yvec*i*self.width/2)
         self.drawhead()
         self.drawarrow()
+
 
     
 
@@ -140,10 +159,6 @@ class sneks(playerMovement):
         for i in angles:
             centers.append((self.position1-widtovec(self.width/1.5,i)))
             pygame.draw.aacircle(self.headsurface, self.color,(self.position1-widtovec(self.width/1.5,i)), self.width/2)
-        #pygame.draw.polygon(self.headsurface,color,((self.position-widtovec(self.width,0),player_pos-widtovec(self.width,180),player_pos- widtovec(self.width,-90))))
-       # veclist = list(map(lambda x : self.position+ pygame.Vector2(x),p))
-
-        #pygame.draw.polygon(self.headsurface,color,veclist)
         for i in range(3):
             pygame.draw.polygon(self.headsurface,self.color,rectangles(i))
         for i in angleeye:
@@ -185,8 +200,6 @@ class sneks(playerMovement):
 
 
         #print((self.pos_for_circles[0]-position).magnitude())
-        if self.color =="blue":
-            print(self.count,len(self.pos_for_circles))
 
         self.drawbody(self.pos_for_circles[self.count],last=True)
         for i in range(self.count-1,0,-1):
@@ -223,30 +236,169 @@ class sneks(playerMovement):
         self.point+= (rad/3)
         self.width=10 + int(math.log(self.point)+0.1*math.sqrt(self.point))
         self.drawhead()
+
     def deadparticles(self):
         particlespersegment = int(self.point/self.count)
         for body in self.bodyrects:
             for i in range(particlespersegment):
 
                 color1 = [random.randint(0,255) for i in range(3)]
-                color2 = [random.randint(0,255) for i in range(3)]
                 x = random.randint(body.left,body.right)
                 y = random.randint(body.top,body.bottom)
                 radiuses = [6, 9,12]
                 weights = [7, 2, 1]
                 rad = random.choices(radiuses,weights=weights)[0]
-                circleobject = circleobj(x,y,rad-1,color1,color2)
+                circleobject = circleobj(x,y,rad-1,color1)
                 circle = circleobject.rect
-                circles.append(circle)
-                cirobjects.append(circleobject)                       
+                yield circle,circleobject 
+
+                     
 
 
 
 
 class gameboard():
-    def __init__(self):
-        self.screen=pygame.display.set_mode((640,640))
-        self.sneks=[]
+    def __init__(self,screen:pygame.Surface,no_sneks:int,no_circles:int):
+        self.screen = screen
+        self.width,self.height= (2560,2560)
+        self.board = pygame.Surface((self.width,self.height))
+        self.board.fill("black")
+        self.sneks:list[sneks]=[]
+        self.initplayer_pos = pygame.Vector2(self.width/2, self.height/2)
+        self.no_sneks= no_sneks
+        self.no_circles=no_circles
+        #self.makeplayer()
+        #self.makesneks("random",6)
+        self.makesneks("simplevectorai",15)
+        self.makecircles()
+        self.makeboarders()
+    def makeboarders(self):
+
+        self.borders= [
+            pygame.Rect(0,0,100,self.height),
+            pygame.Rect(0,0,self.width,100),
+            pygame.Rect(0,self.height,self.width,100),
+            pygame.Rect(self.width,0,100,self.height)        
+
+        ]
+
+
+            
+    def makeplayer(self):
+        playersnek = sneks(self.board,self.initplayer_pos,"key",[random.randint(0,255) for i in range(3)],10)
+        self.sneks.insert(0,playersnek)
+    def makesneks(self,move,no=None):
+        if no :
+            number = no
+            self.no_sneks+=no
+        else:
+            number=self.no_sneks
+        for i in range(number):
+            color = [random.randint(0,255) for i in range(3)]
+            while True:
+                x = random.randint(0,self.width)
+                y = random.randint(0,self.height)
+                point = int(abs(random.gauss(50,25)))  
+                if point ==0: point = 1
+                snake = sneks(self.board,(x,y),move,color,point)
+                snakerect = snake.headrect.unionall(snake.bodyrects)
+                othersnakebodies = []
+                for othersnake in self.sneks:
+                    othersnakebodies.append(othersnake.headrect.unionall(othersnake.bodyrects))
+                if len(snakerect.collidelistall(othersnakebodies)) ==0:
+                    self.sneks.append(snake)
+                    break
+    def makecircles(self):           
+        self.circles = []
+        self.cirobjects:list[circleobj]=[]
+        self.deadcirobjects={}
+        for i in range(self.no_circles):
+            color1 = [random.randint(0,255) for i in range(3)]
+            while True:
+                x = random.randint(0,self.width)
+                y = random.randint(0,self.height)
+                radiuses = [6, 9,12]
+                weights = [7, 2, 1]
+                rad = random.choices(radiuses,weights=weights)[0]
+                circleobject = circleobj(x,y,rad-1,color1)
+                circle = circleobject.rect
+                if len(circle.collidelistall(self.circles)) ==0:
+                    self.circles.append(circle)
+                    self.cirobjects.append(circleobject)                        
+                    break
+    def updateboard(self):
+        self.screen.fill("black")
+        self.board.fill("black")
+        for i in self.cirobjects:
+            i.drawparticle(self.board)
+        self.pointsurf = render_outlined(default_font,str(int(self.sneks[0].point)),"white","black",3)
+    def particlemovement(self):
+        for deadobj,snake in list(self.deadcirobjects.items()):
+            relpos=deadobj.rect.center-snake.position
+            if abs(relpos.x) < 4 and abs(relpos.y) < 4:
+                #print("yes")
+                self.deadcirobjects.pop(deadobj)
+            else:
+                direction = -relpos.normalize() 
+                deadobj.rect.move_ip(direction*10)
+                deadobj.drawparticle(self.board)
+
+                
+
+    def snekaction(self,snake:sneks):
+
+        snakeheads=[]
+        snakebodies =[]
+
+        for othersnake in self.sneks:
+            if othersnake == snake: continue
+            snakebodies+= othersnake.bodyrects
+            snakeheads.append(othersnake.headrect)
+        if snake.isplayer =="simplevectorai":
+            snake.environment["circles"]=self.circles
+            snake.environment["bodies"]= snakebodies
+            snake.environment["heads"]= snakeheads
+            snake.environment["border"]= self.borders
+
+
+        snake.showsnek()
+
+        indofcoll= snake.headrect.collidelistall(self.circles)
+        if indofcoll:
+            indofcoll.sort(reverse=True)
+            for ind in indofcoll:
+                snake.increasecount(self.cirobjects[ind].radius)
+                self.deadcirobjects[self.cirobjects[ind]] = snake
+                self.cirobjects.remove(self.cirobjects[ind])
+                self.circles.remove(self.circles[ind])
+
+        bodycoll= snake.bodyrects[-1].collidelistall(snakebodies)  
+        if bodycoll:
+            bodycoll.sort()
+            for circle,circleobj in snake.deadparticles():
+                self.circles.append(circle)
+                self.cirobjects.append(circleobj)
+            self.sneks.remove(snake)
+    def updategame(self):
+        self.updateboard()
+        self.particlemovement()
+        for snek in self.sneks:
+            self.snekaction(snek)
+        pointrect= self.pointsurf.get_rect(center=(320,50))
+        for border in self.borders:
+            print(border)
+            pygame.draw.rect(self.board,"red",border)
+
+
+        self.screen.blit(self.board,(screen.get_width()/2,screen.get_height()/2)-self.sneks[0].position)
+        self.screen.blit(self.pointsurf,pointrect)
+
+
+
+
+    
+
+
 
 
 default_font = pygame.font.Font(None, 48)
@@ -271,17 +423,12 @@ def render_outlined(
 #movement = playerMovement(maxspeed=200,acc=500) 
   
 class circleobj():
-    def __init__(self,x,y,rad,innercolor,outercolor):
+    def __init__(self,x,y,rad,innercolor):
         self.innercolor = innercolor
-        self.outercolor = outercolor
         self.radius= rad
         self.surf = pygame.Surface((rad*2,rad*2), pygame.SRCALPHA)
         self.center =(x,y)
         self.rect = self.surf.get_rect(center=(x,y))
-    # innerrgb =pygame.Color(innercolor)
-    # inrgb =(innerrgb.r,innerrgb.g,innerrgb.a)
-    # outerrgb =pygame.Color(outercolor)
-    # outrgb =(outerrgb.r,outerrgb.g,outerrgb.a)
         center = (self.surf.get_height()/2,self.surf.get_width()/2)
         radius = self.rect.width/2
         gradientwid= radius/2
@@ -295,113 +442,16 @@ class circleobj():
             a-= t
             pygame.draw.aacircle(self.surf,(r,g,b,a),center,gradientwid+i,1)
     def drawparticle(self,surface,rel= 0):
-        #self.rect =self.rect.move_to(center=self.center)
         surface.blit(self.surf,self.rect)
 
-count = 10
-width,height= (2560,2560)
-player_pos = pygame.Vector2(width/2, height/2)
-board = pygame.Surface((width,height))
-board.fill("black")
-
-circles = []
-cirobjects=[]
-deadcirobjects={}
-for i in range(700):
-
-    color1 = [random.randint(0,255) for i in range(3)]
-    color2 = [random.randint(0,255) for i in range(3)]
-    while True:
-        x = random.randint(0,width)
-        y = random.randint(0,height)
-        radiuses = [6, 9,12]
-        weights = [7, 2, 1]
-        rad = random.choices(radiuses,weights=weights)[0]
-        circleobject = circleobj(x,y,rad-1,color1,color2)
-        circle = circleobject.rect
-        if len(circle.collidelistall(circles)) ==0:
-            circles.append(circle)
-            cirobjects.append(circleobject)
-            
-            break
-
-
-snakes =[
-sneks(board,player_pos,"key","blue",count),
-sneks(board,player_pos.copy()+(100,0),"random","gold",50),
-sneks(board,player_pos.copy()+(-100,0),"random","gray",40),
-sneks(board,player_pos.copy()+(-200,0),"random","white",30),
-sneks(board,player_pos.copy()+(200,0),"random","orange",20)
-]
-
+game = gameboard(screen,20,800)
 while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    board.fill("black")
-    screen.fill("black")
-    for i in cirobjects:
-        i.drawparticle(board)
-    points = render_outlined(default_font,str(int(snakes[0].point)),"white","black",3)
-
-    dictcleanup=[]
-    for deadobj,snake in list(deadcirobjects.items()):
-        relpos=deadobj.rect.center-snake.position
-        if abs(relpos.x) < 3 and abs(relpos.y) < 3:
-            #print("yes")
-            deadcirobjects.pop(deadobj)
-        else:
-            direction = -relpos.normalize() 
-            #wdprint(direction)
-            deadobj.rect.move_ip(direction*5)
-            deadobj.drawparticle(board)
-
-    #map(lambda x: deadcirobjects.pop(x),dictcleanup)
-
-            
-    
-    for i,snake in enumerate(snakes):
-        snake.showsnek()
-        snakebodies =[]
-        for othersnake in snakes:
-            if othersnake == snake: continue
-            snakebodies+= othersnake.bodyrects
-
-
-        indofcoll= snake.headrect.collidelistall(circles)
-        if indofcoll:
-            indofcoll.sort(reverse=True)
-            for ind in indofcoll:
-                snake.increasecount(cirobjects[ind].radius)
-                # relpos=cirobjects[ind].rect.center-snake.position
-                # direction = -relpos.normalize()
-                # cirobjects[ind].rect.move_ip(direction*10)
-                # print(relpos,ind)
-                # if abs(relpos.x) < 2 and abs(relpos.y) < 2:
-                deadcirobjects[cirobjects[ind]] = snake
-                cirobjects.remove(cirobjects[ind])
-                circles.remove(circles[ind])
-        bodycoll= snake.bodyrects[-1].collidelistall(snakebodies)  
-        # for x in snakebodies: 
-        #     pygame.draw.rect(board,'white',x , width=3)
-        if bodycoll:
-            bodycoll.sort()
-            snake.deadparticles()
-            snakes.remove(snake)
-            # print(bodycoll)
-            # print(snake.color)
-
-        
-
-
-        #cirobjects[ind].drawparticle(board)
-        #screen.blit(board)
-            
-    pointrect= points.get_rect(center=(320,50))
-    screen.blit(board,(screen.get_width()/2,screen.get_height()/2)-snakes[0].position)
-    screen.blit(points,pointrect)
+    game.updategame()
 
     pygame.display.flip()
     
