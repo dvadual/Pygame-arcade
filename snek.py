@@ -273,14 +273,15 @@ class gameboard():
         self.makecircles()
         self.makeboarders()
     def makeboarders(self):
-
-        self.borders= [
-            pygame.Rect(0,0,100,self.height),
-            pygame.Rect(0,0,self.width,100),
-            pygame.Rect(0,self.height,self.width,100),
-            pygame.Rect(self.width,0,100,self.height)        
-
-        ]
+        no_of_borders= int(self.height/100)
+        self.borders=[]
+        for i in range(no_of_borders):
+            self.borders+= [
+                pygame.Rect(0,100*i,100,100),
+                pygame.Rect(100*i,0,100,100),
+                pygame.Rect(100*i,self.height,100,100),
+                pygame.Rect(self.width,100*i,100,100)        
+            ]
 
 
             
@@ -385,9 +386,9 @@ class gameboard():
         for snek in self.sneks:
             self.snekaction(snek)
         pointrect= self.pointsurf.get_rect(center=(320,50))
-        for border in self.borders:
-            print(border)
-            pygame.draw.rect(self.board,"red",border)
+        # for border in self.borders:
+        #     #print(border)
+        #     pygame.draw.rect(self.board,"red",border)
 
 
         self.screen.blit(self.board,(screen.get_width()/2,screen.get_height()/2)-self.sneks[0].position)
