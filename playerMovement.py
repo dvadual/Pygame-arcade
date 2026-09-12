@@ -78,12 +78,13 @@ class playerMovement():
     def get_input_tensors(self,key,objlist:list[pygame.Rect]):
         colors = {"circles":"orange","bodies":"red","heads":"indigo","border":"gold"}
 
-        detectrect:pygame.Rect=self.headrect.copy().inflate(300,300)
-        pygame.draw.rect(self.screen,"red",detectrect,2)
+        self.detectrect:pygame.Rect=self.headrect.copy().inflate(300,300)
+        bordcol = "red" if self.isplayer=="simplevectorai" else "lightblue"
+        pygame.draw.rect(self.screen,bordcol,self.detectrect,2)
 
         objdirection =pygame.Vector2(0,0)
 
-        indofcoll=detectrect.collidelistall(objlist)
+        indofcoll=self.detectrect.collidelistall(objlist)
         for ind in indofcoll:
             objpos= objlist[ind].center
             objdist =objpos-self.position
@@ -96,7 +97,7 @@ class playerMovement():
     def simpleaimove(self):
             influences ={key:self.get_input_tensors(key,item) for key,item in self.environment.items()}
             direction =  influences["circles"]-0.025*influences["bodies"]+0.25*influences["heads"]-influences["border"]
-
+            #print("yo")
             if direction.length_squared()>0:
                 direction.normalize_ip()
                 self.ifpressed=[direction.x<0,direction.x>0,direction.y<0,direction.y>0]

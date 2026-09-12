@@ -1,11 +1,8 @@
 import pygame  
 
-# pygame setup
 pygame.init()
-#screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
-#dt = 0
 
 
 
@@ -444,17 +441,25 @@ screen = pygame.display.set_mode((640,640))
 #             pygame.draw.aacircle(self.surf,(r,g,b,a),center,gradientwid+i,1)
 #     def drawparticle(self,surface,rel= 0):
 #         surface.blit(self.surf,self.rect)
+from Use_agent import choose_action
 from gameboard import gameboard
 game = gameboard(screen,20,800)
+print(game.sneks[0].position)
+game.dt=1/60
+observationreward= game.updategame([0,0,0,0])
 if __name__=="__main__":
     while running:
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+        game.dt = clock.tick(60) / 1000 
 
-        game.dt = clock.tick(60) / 1000
-        game.updategame()
+        if observationreward:
+            observation,_=observationreward
+
+        observationreward=game.updategame(choose_action(observation))
+
 
         pygame.display.flip()
         
